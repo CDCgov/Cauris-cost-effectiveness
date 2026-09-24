@@ -14,22 +14,6 @@ Languages: R
 
 **General disclaimer** This repository was created for use by CDC programs to collaborate on public health related projects in support of the [CDC mission](https://www.cdc.gov/about/cdc/#cdc_about_cio_mission-our-mission). GitHub is not hosted by the CDC, but is a third party website used by CDC and its partners to share information and collaborate on software. CDC use of GitHub does not imply an endorsement of any one particular service, product, or enterprise.
 
-## Related documents# cauris-cost-effectiveness-PUBLIC ![Build Status](https://img.shields.io/badge/Pre-Release%20-20B2AA?style=for-the-badge)
-
-NOTE: PRE-RELEASE VERSION
-
-Organization: CDC/NCEZID/DHQP/ERIB   
-Contact email: ncezid_shareit@cdc.gov,  yxj6@cdc.gov    
-Status: Archived    
-Languages: R
-
-
-# This project is under governance review. When the review is complete per local and agency processes, this notice will be removed. This material is draft.
-
-# Modeling the Impact of Screening Approaches on Reducing *Candida* (*Candidozyma*) *auris* Colonization in Long-Term Acute Care Hospitals
-
-**General disclaimer** This repository was created for use by CDC programs to collaborate on public health related projects in support of the [CDC mission](https://www.cdc.gov/about/cdc/#cdc_about_cio_mission-our-mission). GitHub is not hosted by the CDC, but is a third party website used by CDC and its partners to share information and collaborate on software. CDC use of GitHub does not imply an endorsement of any one particular service, product, or enterprise.
-
 ## Related documents
 
 * [Open Practices](open_practices.md)
