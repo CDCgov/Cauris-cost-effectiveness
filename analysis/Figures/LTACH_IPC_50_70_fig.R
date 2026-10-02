@@ -97,7 +97,7 @@ no_screen_cum_col <- no_screen_baseline_df %>%
   ) +
   facet_wrap(~ trans) +
   labs(
-    x       = "Importation Tier",
+    x       = "Admission Prevalence Tier",
     y       = "Mean Cumulative Colonization\nCases After 2 Years",
     title   = "No Screening",
     pattern = "IPC Efficacy"
@@ -509,6 +509,7 @@ end_col_RRR_bar_sub <- fig_long_sub_df %>%
   labs(x = "Intervention", y = "RRR of colonization cases after 2 yrs", subtitle = "LTACH IPC 50% vs. IPC 70%", pattern = "IPC efficacy", fill = "Intervention") +
   scale_fill_manual(values = intervention_colors, aesthetics = "fill") +
   scale_pattern_manual(values = c(IPC50 = "none", IPC70 = "stripe"), labels = c("IPC 50%", "IPC 70%")) +
+  scale_y_continuous(labels = scales::percent) +
   theme_bw() +
   theme(axis.text.x = element_text(size = 11, color = "black", angle = 80, vjust = 1, hjust=1), axis.text.y = element_text(size = 11, color = "black",),
         axis.title = element_text(size = 13, color = "black",), strip.text = element_text(size = 11, color = "black",)) +

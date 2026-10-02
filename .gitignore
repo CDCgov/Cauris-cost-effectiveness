@@ -1,0 +1,10 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+logs/
+.DS_Store
+
+# Generated locally by renv::activate(); not shipped with this repository
+.Rprofile
+renv/

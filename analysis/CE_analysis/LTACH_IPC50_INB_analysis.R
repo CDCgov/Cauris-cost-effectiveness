@@ -2,7 +2,7 @@
 
 Sys.setenv(RENV_CONFIG_SANDBOX_ENABLED = FALSE)
 
-hpc <- TRUE
+hpc <- FALSE  # set to TRUE when running on an HPC cluster
 if(hpc) {
   source(".Rprofile") # if in hpc environment then need to source this to load up renv
   #renv::restore(packages = "renv")
@@ -57,8 +57,18 @@ combinations <- combinations %>%
 
 
 
-# Set up parallel processing (adjust workers as needed)
-plan(multisession, workers = 12) 
+# Set up parallel processing.
+# There are only 12 parameter combinations (2 transmission x 3 importation x 2 cost types),
+# so there is no benefit to more than 12 workers. Wall time is bounded by the single longest
+# combination rather than by the worker count, so using fewer workers costs little time and
+# saves memory - each worker holds its own copy of cost_effect_data_df (~25 MB).
+# Expect a run time of about 5 minutes locally on a multi-core laptop (measured at
+# 4.7 min with 9 workers); roughly 7-10 minutes on a 2-core machine.
+if(hpc) {
+  plan(multisession, workers = 12)
+} else {
+  plan(multisession, workers = max(1, min(12, future::availableCores(logical = FALSE) - 1)))
+}
 
 # Use future_pmap_dfr for parallel processing
 INB_results <- future_pmap_dfr(combinations, function(trans, import, cost_type, WTP_lower, WTP_upper) {

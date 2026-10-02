@@ -132,17 +132,44 @@ Scripts that run the model scenarios and process the model output. See [analysis
 -   `run_calibration_hpc.R` — runs the ABC-SMC calibration for a single facility, period, and IPC efficacy combination
 -   `calibration_figures.R` — posterior distribution figures and summaries for the calibrated transmission rate
 
+### `example_simulation/`
+A small, self-contained demonstration of the simulation model that runs on a laptop in about 3 minutes, comparing five screening strategies in a single scenario and producing two reduced manuscript-style figures. See [example_simulation/README.md](example_simulation/README.md).
+
+**This example uses a completely simulated length-of-stay distribution, not the CMS data used in the manuscript, and therefore does not reproduce the published results.** It is intended to show how the model is set up and run.
+
 ## Data availability
 
-**This repository contains code only.** The `data/`, `data_output/`, and `figures/` directories referenced by the scripts are not included.
+This repository contains the model and analysis code, plus a subset of post-processed model output sufficient to reproduce the cost-effectiveness analyses and figures.
 
-The scripts expect the following directories, which are supplied by the user or generated when the code is run:
+### Included
+
+`data_output/LTACH_IPC50_model_update/` and `data_output/LTACH_IPC70_model_update/` each contain (~101 MB total):
+
+-   `cost_effect_data.csv` — per-simulation cumulative cases, costs, and cases averted (24 MB each)
+-   `avg_state_data.csv` — mean and 95% prediction intervals of susceptible, colonized, and infected patients at each time point (26 MB each)
+-   `cost_effect_avg_data.csv` — summary statistics across the 1,000 simulations per parameter combination
+-   `last_6mo_prev_inc_data.csv` — prevalence and incidence averaged over the final 6 months of the simulation
+
+These are post-processed simulation output. They contain no patient- or facility-level data.
+
+### Not included
 
 -   `data/` — model and calibration inputs, including CMS length-of-stay distributions and the facility screening data used for calibration. The facility screening data are not publicly available; they were provided by participating health departments under data use agreements and contain facility-identifiable information.
--   `data_output/` — model output written by the model run scripts and read by the analysis scripts
--   `figures/` and `calibration/results_figs/` — figure output directories
+-   `INB_results.csv` (72–86 MB per IPC level), `params_df_sim_data.csv`, and `percent_pos_summary.csv`, omitted for size. `INB_results.csv` can be regenerated from the included data — see below.
+-   `figures/` and `calibration/results_figs/` — figure output directories, created when the figure scripts are run.
 
-Because the input data are not included, the scripts in this repository are provided for methodological transparency and reuse rather than as a directly reproducible pipeline. The simulation model itself (`R/individual.R`) requires only a length-of-stay distribution and a parameter data frame, and can be run independently of the facility screening data.
+### What you can run from the included data
+
+All of the analysis and figure scripts run from the included data:
+
+-   `analysis/LTACH_IPC50_70_outcome_analysis.R`
+-   `analysis/Figures/LTACH_IPC_50_70_fig.R`
+-   `analysis/Figures/LTACH_IPC50_update_figures.R` and `LTACH_IPC70_update_figures.R`
+-   `analysis/Figures/combined_IPC50_IPC70_buildup_panel_figure.R`
+-   `analysis/CE_analysis/LTACH_IPC50_CE_analysis.R` and `LTACH_IPC70_CE_analysis.R` — the cost-effectiveness frontier and scatter figures run directly. The net benefit sections at the end of each script read `INB_results.csv`; run the corresponding `*_INB_analysis.R` script first to generate it.
+-   `analysis/CE_analysis/LTACH_IPC50_INB_analysis.R` and `LTACH_IPC70_INB_analysis.R` — read `cost_effect_data.csv` and write `INB_results.csv`. **Run time is about 5 minutes each on a typical laptop**, so these are practical to run locally despite originally having been run on an HPC cluster. See the run time table above.
+
+The model run scripts (`analysis/model_runs/`) and the calibration scripts (`calibration/`) require the non-public inputs in `data/` and cannot be run from this repository. They are provided for methodological transparency. The simulation model itself (`R/individual.R`) requires only a length-of-stay distribution and a parameter data frame, and can be run independently of the facility screening data.
 
 ## Model outputs
 
@@ -163,11 +190,76 @@ Because the input data are not included, the scripts in this repository are prov
 
 ## Running the model
 
-All analyses were done in R 4.4.0. The following packages are required:
+### Setting up the R environment
 
-`here`, `tidyverse`, `data.table`, `purrr`, `furrr`, `future`, `tmvtnorm`, `WeightIt`, `ggplot2`, `RColorBrewer`, `ggh4x`, `ggpattern`, `ggridges`, `patchwork`, `scales`, `zoo`, `broom`, `car`, `emmeans`, `estimatr`, `glmmTMB`, and `dampack`.
+The analyses reported in the manuscript were run in R 4.4.0. The `renv.lock` file in this repository records R 4.5.0 and the package versions used for the analysis and figure scripts; see the note on scope below.
 
-The model run and calibration scripts were written to run on a high-performance computing (HPC) cluster, using array jobs to distribute parameter combinations or facility/period/IPC-efficacy combinations across nodes, and `future`/`furrr` to parallelize simulations within a job. Each script has an `hpc` flag near the top that controls how the parallel backend is configured and whether a project-level `.Rprofile` is sourced; set `hpc <- FALSE` to run locally with a smaller number of workers.
+There are two ways to set up the packages. Either works — choose based on whether you want exact pinned versions.
+
+**Option 1 — `renv` (recommended; exact package versions)**
+
+This repository ships `renv.lock` but intentionally does *not* ship a `.Rprofile` or `renv/` directory, so that opening the project does not silently trigger a package bootstrap. You generate those locally in one step:
+
+```r
+install.packages("renv")   # if you do not already have it
+renv::activate()           # creates .Rprofile and renv/ in the project folder
+# restart R when prompted
+renv::restore()            # installs the package versions recorded in renv.lock
+```
+
+`renv::restore()` will prompt before installing and will report which packages it needs. The generated `.Rprofile` and `renv/` files are local to your machine; they are listed in `.gitignore` and should not be committed back.
+
+**Option 2 — plain `install.packages()` (no `renv`)**
+
+If you would rather not use `renv`, install the required packages directly:
+
+```r
+install.packages(c(
+  "here", "tidyverse", "data.table", "purrr", "furrr", "future",
+  "tmvtnorm", "WeightIt", "ggplot2", "RColorBrewer", "ggh4x",
+  "ggpattern", "ggridges", "patchwork", "scales", "zoo",
+  "broom", "car", "emmeans", "estimatr", "glmmTMB", "dampack"
+))
+```
+
+This installs whatever versions are current on CRAN rather than the pinned versions, so results should be equivalent but exact numerical reproduction is not guaranteed.
+
+**What the lockfile does and does not cover.** `renv.lock` describes an environment in which the analysis and figure scripts run correctly. It is *not* a record of the environment in which the original simulation model runs were performed — those were run earlier on a high-performance computing cluster, and the lockfile has been updated since. Use it to reproduce the analysis and figure layer, not to claim bit-for-bit reproduction of the original model output.
+
+**macOS note.** `dampack` and `glmmTMB` depend on `mgcv` and `TMB`, which are compiled with OpenMP support. macOS does not ship the OpenMP runtime, so loading these packages can fail with an error like:
+
+```
+unable to load shared object '.../mgcv.so':
+  symbol not found in flat namespace '___kmpc_barrier'
+```
+
+If you see this, install the OpenMP runtime from <https://mac.r-project.org/openmp/> and restart R. Windows and Linux users should not encounter this.
+
+### Running locally vs. on an HPC cluster
+
+The model run and calibration scripts were written to run on a high-performance computing (HPC) cluster, using array jobs to distribute parameter combinations or facility/period/IPC-efficacy combinations across nodes, and `future`/`furrr` to parallelize simulations within a job.
+
+Scripts in `analysis/model_runs/`, `analysis/CE_analysis/*_INB_analysis.R`, and `calibration/` have an `hpc` flag near the top that controls how the parallel backend is configured. When `hpc <- TRUE`, the script calls `source(".Rprofile")`, which will fail unless you have run `renv::activate()` as described above.
+
+What each script expects, and how long it takes locally:
+
+| Script | Ships as | Runs locally? | Approximate local run time |
+| --- | --- | --- | --- |
+| `example_simulation/run_example_simulation.R` | no flag | yes | **~3 minutes** |
+| `analysis/CE_analysis/*_CE_analysis.R` | no flag | yes | **~1 minute** (excluding the INB step below) |
+| `analysis/Figures/`, `analysis/LTACH_IPC50_70_outcome_analysis.R` | no flag | yes | a few minutes each |
+| `analysis/CE_analysis/LTACH_IPC50_INB_analysis.R` | `hpc <- FALSE` | yes | **~5 minutes** |
+| `analysis/CE_analysis/LTACH_IPC70_INB_analysis.R` | `hpc <- FALSE` | yes | **~5 minutes** |
+| `analysis/model_runs/*_model_run_hpc.R` | `hpc <- TRUE` | no — needs cluster and non-public `data/` | hours on an HPC cluster |
+| `calibration/run_calibration_hpc.R` | `hpc <- TRUE` | no — needs cluster and non-public `data/` | hours on an HPC cluster |
+
+Run times were measured on a 10-core laptop: 2.8 minutes for the example simulation, 46 seconds for `LTACH_IPC50_CE_analysis.R` (which also writes six TIFF figures), and 4.7 minutes for `LTACH_IPC50_INB_analysis.R`. Expect longer on a machine with fewer cores.
+
+The two `*_INB_analysis.R` scripts ship with `hpc <- FALSE` and scale the number of parallel workers to the machine they are run on, so they work locally without modification. Their run time is dominated by the single longest willingness-to-pay sweep rather than by the worker count, so a machine with fewer cores takes less additional time than you might expect; on a 2-core machine expect roughly 7–10 minutes. The ~5 minute figure was measured on a 10-core laptop using 9 workers.
+
+The model run and calibration scripts ship with `hpc <- TRUE`, since they require cluster resources and the non-public inputs in `data/`. Set `hpc <- FALSE` if you are adapting them to run elsewhere.
+
+The cost-effectiveness and figure scripts (`analysis/CE_analysis/*_CE_analysis.R` and `analysis/Figures/`) have no `hpc` flag and are intended to be run locally as-is.
 
 Suggested order of operations:
 
