@@ -1,6 +1,4 @@
-# cauris-cost-effectiveness-PUBLIC ![Build Status](https://img.shields.io/badge/Pre-Release%20-20B2AA?style=for-the-badge)
-
-NOTE: PRE-RELEASE VERSION
+# Cauris-cost-effectiveness ![Build Status](https://img.shields.io/badge/Released%20-20B2AA?style=for-the-badge)
 
 Organization: CDC/NCEZID/DHQP/ERIB   
 Contact email: ncezid_shareit@cdc.gov,  yxj6@cdc.gov, leo3@cdc.gov   
